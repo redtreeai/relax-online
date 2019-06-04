@@ -22,19 +22,29 @@ DATA = {
     'br':0, #b是否准备
     'game_ing':0, #是否开局中
     'chatlog':[], #日志信息
-    'loglong':5  #日志长度
+    'loglong':5 , #日志长度
+    'list_black' : [] , # Black chess pieces positions
+    'list_white' : [] , # White chess pieces positions
+    'turn' : 1  # 1 : Turn to black side / 0 :   Turn to white side
 }
 
-async def reset():
+#重置操作数据
+async def reset_cmsg():
     DATA['cuser']=''
     DATA['code']=''
+
+# 一旦有玩家退出或投降则重置游戏数据
+async def reset_ginfo():
+    DATA['ar'] = 0
+    DATA['br'] = 0
+    DATA['game_ing'] = 0
 
 
 async def notify_users():
     if USERS:       # asyncio.wait doesn't accept an empty list
         message = json.dumps(DATA)
         #发送后重置请求
-        await reset()
+        await reset_cmsg()
         await asyncio.wait([user.send(message) for user in USERS])
 
 #登记不同用户的websocket链接
@@ -94,6 +104,7 @@ async def linker(websocket, path):
                 DATA['code'] = 'exit'
                 DATA['cuser'] = 'a'
 
+                await reset_ginfo()
                 await notify_users()
             elif message == 'bexit':
                 DATA['b'] = 0
@@ -104,7 +115,95 @@ async def linker(websocket, path):
                 DATA['code'] = 'exit'
                 DATA['cuser'] = 'b'
 
+                await reset_ginfo()
                 await notify_users()
+
+            elif message == 'aready':
+                if DATA['br'] ==1:
+                    DATA['ar'] = 1
+                    DATA['game_ing'] = 1
+                    #双方都准备，直接开始游戏
+                    DATA['chatlog'].append('双方准备完毕，游戏开始')
+                    print('双方准备完毕，游戏开始')
+                    if len(DATA['chatlog']) > DATA['loglong']:
+                        DATA['chatlog'].pop(0)
+
+                    DATA['code'] = 'startgame'
+                    DATA['cuser'] = 'm'
+
+                    await notify_users()
+
+                else:
+                    DATA['ar'] = 1
+                    DATA['chatlog'].append('玩家a已准备进行游戏')
+                    print('玩家a已准备进行游戏')
+                    if len(DATA['chatlog']) > DATA['loglong']:
+                        DATA['chatlog'].pop(0)
+                    DATA['code'] = 'ready'
+                    DATA['cuser'] = 'a'
+
+                    await notify_users()
+
+
+            elif message == 'bready':
+                if DATA['ar'] == 1:
+                    # 双方都准备，直接开始游戏
+                    DATA['br'] = 1
+                    DATA['game_ing'] = 1
+                    DATA['chatlog'].append('双方准备完毕，游戏开始')
+                    print('双方准备完毕，游戏开始')
+                    if len(DATA['chatlog']) > DATA['loglong']:
+                        DATA['chatlog'].pop(0)
+
+                    DATA['code'] = 'startgame'
+                    DATA['cuser'] = 'm'
+
+                    await notify_users()
+
+                else:
+                    DATA['br'] = 1
+                    DATA['chatlog'].append('玩家b已准备进行游戏')
+                    print('玩家b已准备进行游戏')
+                    if len(DATA['chatlog']) > DATA['loglong']:
+                        DATA['chatlog'].pop(0)
+                    DATA['code'] = 'ready'
+                    DATA['cuser'] = 'a'
+
+                    await notify_users()
+
+            elif message == 'anotready':
+                if DATA['game_ing'] ==1:
+                    print('非法操作，游戏已开始，无法取消')
+                else:
+                    DATA['ar'] = 0
+                    #双方都准备，直接开始游戏
+                    DATA['chatlog'].append('玩家a取消准备')
+                    print('玩家a取消准备')
+                    if len(DATA['chatlog']) > DATA['loglong']:
+                        DATA['chatlog'].pop(0)
+
+                    DATA['code'] = 'notready'
+                    DATA['cuser'] = 'a'
+
+                    await notify_users()
+
+            elif message == 'bnotready':
+                if DATA['game_ing'] ==1:
+                    print('非法操作，游戏已开始，无法取消')
+                else:
+                    DATA['br'] = 0
+                    #双方都准备，直接开始游戏
+                    DATA['chatlog'].append('玩家b取消准备')
+                    print('玩家b取消准备')
+                    if len(DATA['chatlog']) > DATA['loglong']:
+                        DATA['chatlog'].pop(0)
+
+                    DATA['code'] = 'notready'
+                    DATA['cuser'] = 'b'
+
+                    await notify_users()
+
+
             elif str(message).startswith('a:') or str(message).startswith('b:'):
                 DATA['chatlog'].append(message)
                 if len(DATA['chatlog']) > DATA['loglong']:
@@ -127,7 +226,9 @@ async def linker(websocket, path):
 
 
 print('正在配置websocket-server基础信息')
-wserver = websockets.serve(linker, '0.0.0.0', 9999)
+#HOST = 'localhost'
+HOST = '0.0.0.0'
+wserver = websockets.serve(linker, HOST, 9999)
 print('正在启动wserver')
 asyncio.get_event_loop().run_until_complete(wserver
     )

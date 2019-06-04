@@ -18,15 +18,19 @@
     <header class="bar bar-nav">
         <a class="icon icon-me pull-left icon-left" onclick="exitroom()"></a>
         <h1 class="title">001号房间</h1>
-        <a href="" class="icon icon-me pull-right icon-check ">准备</a>
+        <a class="icon icon-me pull-right icon-check " id="ready" onclick="getReady()"></a>
     </header>
     <div class="content">
         <div>
             <!-- 游戏区 -->
+            <canvas id="wuzi" width="400" height="500" onmousedown="listener(event)"></canvas>
         </div>
         <div class="content-block">
             <!-- 聊天区 -->
-            <div class="row ">
+            <div class="row" id="playerinfo">
+
+            </div>
+            <div class="row">
                 <!-- 聊天纪录 -->
                 <div class="list-block">
                     <ul id="chatlog">
@@ -46,6 +50,7 @@
 
 
 </div>
+<script type='text/javascript' src='../static/config.js' charset='utf-8'></script>
 <script type='text/javascript' src='//g.alicdn.com/sj/lib/zepto/zepto.min.js' charset='utf-8'></script>
 <script type='text/javascript' src='//g.alicdn.com/msui/sm/0.6.2/js/sm.min.js' charset='utf-8'></script>
 <script type='text/javascript' src='//g.alicdn.com/msui/sm/0.6.2/js/sm-extend.min.js' charset='utf-8'></script>
@@ -53,6 +58,63 @@
     var ws;
     var cuser = '0';
     var chatlog_array = new Array();
+    var isReady = false;
+    var isGameing = false;
+    var c = document.getElementById("wuzi");
+
+    var cxt = c.getContext("2d");
+    cxt.fillStyle = "black";
+
+    //绘制棋盘
+    for (var x = 20; x < 490; x = x + 40) {
+        cxt.moveTo(20, x)
+        cxt.lineTo(380, x)
+        cxt.stroke();
+    }
+
+    for (var y = 20; y < 390; y = y + 40) {
+        cxt.moveTo(y, 20)
+        cxt.lineTo(y, 460)
+        cxt.stroke();
+    }
+
+    function listener(n) {
+        //鼠标坐标监听事件
+        var pointX = n.clientX;
+        var pointY = n.clientY;
+
+        console.log(pointX,pointY)
+        addX = delX = pointX
+        addY = delY = pointY
+
+        while ((addX%40)!=0 && (addX%40)!=0){
+            addX = addX + 1
+            delX = delX - 1
+        }
+
+        while ((addY%40)!=0 && (addY%40)!=0){
+            addY = addY + 1
+            delY = delY - 1
+        }
+
+        if((addX%40) ==0){
+         cx = addX
+        }else{
+            cx=delX
+        }
+
+         if((addY%40) ==0){
+         cy = addY
+        }else{
+             cy = delY
+        }
+
+        cxt.beginPath();
+        cxt.arc(cx, cy, 20, 0, Math.PI * 2, true);
+        cxt.closePath();
+        cxt.fill();
+
+    }
 
     //初始化websockt对象
 
@@ -73,6 +135,7 @@
         }
     }
 
+
     function sendmsg() {
         var inputmsg = document.getElementById("inputmsg").value;
         document.getElementById("inputmsg").value = " "
@@ -82,9 +145,10 @@
     function startWS() {
         //console.log('建立前街前:' + cuser)
 
-        ws = new WebSocket("ws://122.152.232.55:9999/");
+        ws = new WebSocket(BASE.socket_url);
         ws.onopen = function (msg) {
             ws.send("connect");
+            document.getElementById('ready').innerHTML = '准备'
         };
         ws.onmessage = function (msg) {
             var received_msg = strToJson(msg.data);
@@ -100,10 +164,50 @@
                 } else if (received_msg.code == 'chat') {
                     chatlog_array = received_msg.chatlog
                     change_log()
+                } else if (received_msg.code == 'ready') {
+                    if (received_msg.cuser == cuser) {
+                        isReady = true
+                        document.getElementById('ready').innerHTML = '取消'
+
+                    }
+                    chatlog_array = received_msg.chatlog
+                    change_log()
+                } else if (received_msg.code == 'notready') {
+                    if (received_msg.cuser == cuser) {
+                        isReady = false
+                        document.getElementById('ready').innerHTML = '准备'
+
+                    }
+                    chatlog_array = received_msg.chatlog
+                    change_log()
+                } else if (received_msg.code == 'exit') {
+                    isReady = false
+                    document.getElementById('ready').innerHTML = '准备'
+                    chatlog_array = received_msg.chatlog
+                    change_log()
+                } else if (received_msg.code == 'startgame') {
+                    isGameing = true
+                    document.getElementById('ready').innerHTML = '投降'
+                    chatlog_array = received_msg.chatlog
+                    change_log()
                 }
             }
             chatlog_array = received_msg.chatlog
             change_log()
+            ih = ''
+            if (received_msg.a == 1) {
+                ih = ih + '<img src="../static/ahead.jpg">'
+            } else {
+                ih = ih + '<img src="../static/agray.jpg">'
+            }
+
+            if (received_msg.b == 1) {
+                ih = ih + '<img src="../static/bhead.jpg">'
+            } else {
+                ih = ih + '<img src="../static/bgray.jpg">'
+            }
+
+            document.getElementById('playerinfo').innerHTML = ih + '你是:玩家' + cuser
 
         };
         ws.onerror = function (error) {
@@ -123,6 +227,19 @@
         cuser = '0'
         ws.close();
         //alert('退出房间')
+    }
+
+    function getReady() {
+        if (isGameing == true) {
+            //游戏进行中可以选择投降
+        } else {
+            if (isReady == false) {
+                //准备
+                ws.send(cuser + 'ready')
+            } else {
+                ws.send(cuser + 'notready')
+            }
+        }
     }
 
     function exitroom() {
