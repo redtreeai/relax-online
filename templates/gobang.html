@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Relax-Online</title>
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1">
+    <link rel="shortcut icon" href="/favicon.ico">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+    <link rel="stylesheet" href="//g.alicdn.com/msui/sm/0.6.2/css/sm.min.css">
+    <link rel="stylesheet" href="//g.alicdn.com/msui/sm/0.6.2/css/sm-extend.min.css">
+
+</head>
+<body onload="startWS()">
+<div class="page">
+    <header class="bar bar-nav">
+        <a class="icon icon-me pull-left icon-left" onclick="exitroom()"></a>
+        <h1 class="title">001号房间</h1>
+        <a href="" class="icon icon-me pull-right icon-check ">准备</a>
+    </header>
+    <div class="content">
+        <div>
+            <!-- 游戏区 -->
+        </div>
+        <div class="content-block">
+            <!-- 聊天区 -->
+            <div class="row ">
+                <!-- 聊天纪录 -->
+                <div class="list-block">
+                    <ul id="chatlog">
+
+                    </ul>
+                </div>
+            </div>
+            <div class="row">
+                <!-- 消息放松 -->
+                <div class="col-80"><input type="text" class="input-lg" id="inputmsg" placeholder="输入聊天内容"></div>
+                <div class="col-30"><a class="button button-small button-fill button-success" onclick="sendmsg()">提交</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+</div>
+<script type='text/javascript' src='//g.alicdn.com/sj/lib/zepto/zepto.min.js' charset='utf-8'></script>
+<script type='text/javascript' src='//g.alicdn.com/msui/sm/0.6.2/js/sm.min.js' charset='utf-8'></script>
+<script type='text/javascript' src='//g.alicdn.com/msui/sm/0.6.2/js/sm-extend.min.js' charset='utf-8'></script>
+<script>
+    var ws;
+    var cuser = '0';
+    var chatlog_array = new Array();
+
+    //初始化websockt对象
+
+    //紀錄最多显示5条
+    function change_log() {
+        len = chatlog_array.length;
+        if (len > 5) {
+            end_p = len
+            start_p = end_p - 5
+        } else {
+            end_p = len
+            start_p = 0
+        }
+        var ih = ''
+        for (var j = start_p; j < end_p; j++) {
+            ih = ih + '<li>' + chatlog_array[j] + '</li>'
+            document.getElementById('chatlog').innerHTML = ih
+        }
+    }
+
+    function sendmsg() {
+        var inputmsg = document.getElementById("inputmsg").value;
+        document.getElementById("inputmsg").value = " "
+        ws.send(cuser + ':' + inputmsg)
+    }
+
+    function startWS() {
+        //console.log('建立前街前:' + cuser)
+
+        ws = new WebSocket("ws://127.0.0.1:9999/");
+        ws.onopen = function (msg) {
+            ws.send("connect");
+        };
+        ws.onmessage = function (msg) {
+            var received_msg = strToJson(msg.data);
+            //console.log('接收:' + msg.data)
+
+            if (cuser == '0' && received_msg.code == 'connected') {
+                cuser = received_msg.cuser
+                /console.log('响应后:' + cuser)
+            } else {
+                if (received_msg.code == 'm' && cuser == '0') {
+                    alert("房间已满");
+                    exitroom()
+                } else if (received_msg.code == 'chat') {
+                    chatlog_array = received_msg.chatlog
+                    change_log()
+                }
+            }
+            chatlog_array = received_msg.chatlog
+            change_log()
+
+        };
+        ws.onerror = function (error) {
+            console.log('error :' + error.name + error.number);
+        };
+
+        ws.onclose = function () {
+            // 关闭 websocket
+            ws.send(cuser + "exit");
+            cuser = ''
+            ws.close();
+        };
+    }
+
+    window.onbeforeunload = function () {
+        ws.send(cuser + 'exit')
+        cuser = '0'
+        ws.close();
+        //alert('退出房间')
+    }
+
+    function exitroom() {
+        ws.send(cuser + 'exit')
+        cuser = '0'
+        ws.close();
+        window.open('index.html')
+    }
+
+    //字符串转json
+    function strToJson(str) {
+        return JSON.parse(str);
+    }
+
+</script>
+</body>
+</html>
