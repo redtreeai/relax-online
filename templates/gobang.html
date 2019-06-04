@@ -82,7 +82,7 @@
     function startWS() {
         //console.log('建立前街前:' + cuser)
 
-        ws = new WebSocket("ws://127.0.0.1:9999/");
+        ws = new WebSocket("ws://122.152.232.55:9999/");
         ws.onopen = function (msg) {
             ws.send("connect");
         };
