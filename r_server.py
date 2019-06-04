@@ -127,7 +127,7 @@ async def linker(websocket, path):
 
 
 print('正在配置websocket-server基础信息')
-wserver = websockets.serve(linker, 'localhost', 9999)
+wserver = websockets.serve(linker, '0.0.0.0', 9999)
 print('正在启动wserver')
 asyncio.get_event_loop().run_until_complete(wserver
     )
