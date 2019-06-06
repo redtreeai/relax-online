@@ -31,7 +31,8 @@ DATA = {
     'turn':'a', #轮次
     'pan':[] , #盘面实际数据
     'pan_show':[],#盘面显示数据
-    'checkson':[] #当前校验组
+    'checkson':[], #当前校验组
+    'overed':[] #已处理过的位置组
 
 }
 
@@ -43,7 +44,7 @@ async def start_game():
         DATA['pan'].append(cobj)
 
     while len(DATA['pan_show'])<64:
-        DATA['pan'].append('bg')
+        DATA['pan_show'].append('bg')
 
     #每组两个 然后打乱
     random.shuffle(DATA['pan'])
@@ -255,6 +256,9 @@ async def linker(websocket, path):
                 DATA['bcount'] = 0
                 DATA['turn'] = 'a'
                 DATA['pan'] = []
+                DATA['checkson'] = []
+                DATA['pan_show'] = []
+                DATA['overed'] = []
 
                 await notify_users()
 
@@ -262,52 +266,66 @@ async def linker(websocket, path):
 
                 index = str(message).split(':')[2]
                 cuser = str(message).split(':')[1]
-                if len(DATA['checkson']) == 0:
-                    DATA['checkson'].append(int(index))
-                    DATA['code'] = 'check'
-                    DATA['cuser'] = cuser
-                    #显示盘反转指定牌
-                    DATA['pan_show'][int(index)] = DATA['pan'][int(index)]
-                elif len(DATA['checkson']) == 1:
-                    if int(index)==DATA['checkson'][0]:
-                        #如果点击相同的位置,没有反应
+
+                if cuser==DATA['turn']:
+                    if int(index) in DATA['overed'] or int(index) in DATA['checkson']:
+                        # donothing
                         print('操作无效')
                     else:
-                        DATA['checkson'].append(int(index))
-                        DATA['code'] = 'check'
-                        DATA['cuser'] = cuser
-                        #显示盘反转指定牌
-                        DATA['pan_show'][int(index)] = DATA['pan'][int(index)]
+                        if len(DATA['checkson']) == 0:
+                            DATA['checkson'].append(int(index))
+                            DATA['code'] = 'check'
+                            DATA['cuser'] = cuser
+                            # 显示盘反转指定牌
+                            DATA['pan_show'][int(index)] = DATA['pan'][int(index)]
+                        elif len(DATA['checkson']) == 1:
+                            if int(index) == DATA['checkson'][0]:
+                                # 如果点击相同的位置,没有反应
+                                print('操作无效')
+                            else:
+                                DATA['checkson'].append(int(index))
+                                DATA['code'] = 'check'
+                                DATA['cuser'] = cuser
+                                # 显示盘反转指定牌
+                                DATA['pan_show'][int(index)] = DATA['pan'][int(index)]
 
-                await notify_users()
+                        await notify_users()
 
-                if len(DATA['checkson']) == 2:
-                    #如果校验的两个相等
-                    if DATA['pan'][DATA['checkson'][0]] == DATA['pan'][DATA['checkson'][1]]:
-                        DATA['code'] = 'check'
-                        DATA['cuser'] = cuser
-                        DATA[cuser+'count']=DATA[cuser+'count']+1
-                        #实盘数据清空
-                        DATA['pan'][DATA['checkson'][0]] = 'wt'
-                        DATA['pan'][DATA['checkson'][1]] = 'wt'
-                        #显示盘牌面清空
-                        DATA['pan_show'][DATA['checkson'][0]] = 'wt'
-                        DATA['pan_show'][DATA['checkson'][1]] = 'wt'
+                        if len(DATA['checkson']) == 2:
+
+                            # 如果校验的两个相等
+                            if DATA['pan'][DATA['checkson'][0]] == DATA['pan'][DATA['checkson'][1]]:
+                                DATA['code'] = 'check'
+                                DATA['cuser'] = cuser
+                                DATA[cuser + 'count'] = DATA[cuser + 'count'] + 1
+
+                                # 加入完成组
+                                DATA['overed'].append(DATA['checkson'][0])
+                                DATA['overed'].append(DATA['checkson'][1])
+
+
+                            else:
+                                if cuser == 'a':
+                                    DATA['turn'] = 'b'
+                                else:
+                                    DATA['turn'] = 'a'
+
+                                # 不等则翻回去
+                                DATA['code'] = 'check'
+                                DATA['cuser'] = cuser
+                                # # 显示盘牌面清空
+                                DATA['pan_show'][DATA['checkson'][0]] = 'bg'
+                                DATA['pan_show'][DATA['checkson'][1]] = 'bg'
+
+                            DATA['checkson'] = []
 
                         time.sleep(1.5)
                         await notify_users()
+                else:
+                    print('非法操作')
 
-                    else:
-                        #不等则翻回去
-                        DATA['code'] = 'check'
-                        DATA['cuser'] = cuser
-                        # 实盘数据不变
-                        # 显示盘牌面清空
-                        DATA['pan_show'][DATA['checkson'][0]] = 'bg'
-                        DATA['pan_show'][DATA['checkson'][1]] = 'bg'
 
-                        time.sleep(1.5)
-                        await notify_users()
+
 
             else:
                 ld = {

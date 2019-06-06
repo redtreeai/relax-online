@@ -97,7 +97,7 @@
     function build_pan() {
         pan_html = '<table><tr>'
         for (var px = 0; px < 64; px++) {
-            cobj = '<td><img src="../static/majiang/bg.jpg" id="'+px+'"  onclick="check_click(this)"></td>'
+            cobj = '<td><img src="../static/majiang/'+pan[px]+'.jpg" id="'+px+'"  onclick="check_click(this)"></td>'
             pan_html = pan_html + cobj
             if (px % 8 == 7) {
                 if (px == 63) {
@@ -170,10 +170,9 @@
                     change_log()
                 } else if (received_msg.code == 'startgame') {
                     if (received_msg.turn==cuser){
-                        $.toast("该你了");
-                    }
+                        }
                     isGameing = true
-                    pan = received_msg.pan
+                    pan = received_msg.pan_show
                     turn = received_msg.turn
                     acount = received_msg.acount
                     bcount = received_msg.bcount
@@ -186,10 +185,12 @@
                     ws.close()
                     closePageForm()
                 }
-                else if (received_msg.code == 'allexit') {
-                    ws.send(cuser+'exit')
-                    ws.close()
-                    closePageForm()
+                else if (received_msg.code == 'check') {
+                    pan = received_msg.pan_show
+                    turn = received_msg.turn
+                    acount = received_msg.acount
+                    bcount = received_msg.bcount
+                    build_pan()
                 }
             }
             chatlog_array = received_msg.chatlog
