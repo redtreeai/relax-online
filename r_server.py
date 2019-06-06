@@ -60,9 +60,18 @@ async def reset_cmsg():
 
 # 一旦有玩家退出或投降则重置游戏数据
 async def reset_ginfo():
+
     DATA['ar'] = 0
     DATA['br'] = 0
     DATA['game_ing'] = 0
+    DATA['loglong'] = 5
+    DATA['acount'] = 0
+    DATA['bcount'] = 0
+    DATA['turn'] = 'a'
+    DATA['pan'] = []
+    DATA['checkson'] = []
+    DATA['pan_show'] = []
+    DATA['overed'] = []
 
 
 async def notify_users():
@@ -262,6 +271,46 @@ async def linker(websocket, path):
 
                 await notify_users()
 
+            elif str(message) == 'atouxiang':
+
+                # 重置
+                DATA['code'] ='atouxiang'
+                DATA['a'] = 1
+                DATA['b'] = 1
+                DATA['ar'] = 0
+                DATA['br'] = 0
+                DATA['game_ing'] = 0
+                DATA['loglong'] = 5
+                DATA['acount'] = 0
+                DATA['bcount'] = 0
+                DATA['turn'] = 'a'
+                DATA['pan'] = []
+                DATA['checkson'] = []
+                DATA['pan_show'] = []
+                DATA['overed'] = []
+
+                await notify_users()
+
+            elif str(message) == 'btouxiang':
+
+                # 重置
+                DATA['code'] ='btouxiang'
+                DATA['a'] = 1
+                DATA['b'] = 1
+                DATA['ar'] = 0
+                DATA['br'] = 0
+                DATA['game_ing'] = 0
+                DATA['loglong'] = 5
+                DATA['acount'] = 0
+                DATA['bcount'] = 0
+                DATA['turn'] = 'a'
+                DATA['pan'] = []
+                DATA['checkson'] = []
+                DATA['pan_show'] = []
+                DATA['overed'] = []
+
+                await notify_users()
+
             elif str(message).startswith('check:'):
 
                 index = str(message).split(':')[2]
@@ -319,6 +368,29 @@ async def linker(websocket, path):
 
                             DATA['checkson'] = []
 
+                            if DATA['acount']+DATA['bcount']>=32:
+                                if DATA['acount']>DATA['bcount']:
+                                    DATA['code'] = 'awin'
+                                elif DATA['acount']<DATA['bcount']:
+                                    DATA['code'] = 'bwin'
+                                else:
+                                    DATA['code'] = 'ping'
+
+                                #重置
+                                DATA['a'] = 1
+                                DATA['b'] = 1
+                                DATA['ar'] = 0
+                                DATA['br'] = 0
+                                DATA['game_ing'] = 0
+                                DATA['loglong'] = 5
+                                DATA['acount'] = 0
+                                DATA['bcount'] = 0
+                                DATA['turn'] = 'a'
+                                DATA['pan'] = []
+                                DATA['checkson'] = []
+                                DATA['pan_show'] = []
+                                DATA['overed'] = []
+
                         time.sleep(1.5)
                         await notify_users()
                 else:
@@ -343,8 +415,8 @@ async def linker(websocket, path):
 
 
 print('正在配置websocket-server基础信息')
-HOST = 'localhost'
-#HOST = '0.0.0.0'
+#HOST = 'localhost'
+HOST = '0.0.0.0'
 wserver = websockets.serve(linker, HOST, 9999)
 print('正在启动wserver')
 asyncio.get_event_loop().run_until_complete(wserver

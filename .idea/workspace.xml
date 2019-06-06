@@ -2,14 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="f7b7f268-27e1-445c-9451-ddba766768c7" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/r_server.py" beforeDir="false" afterPath="$PROJECT_DIR$/r_server.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/majiang/bg.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/static/majiang/bg.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/majiang/wt.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/static/majiang/wt.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/sounds/active.mp3" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/sounds/active.ogg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/sounds/over.ogg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/sounds/over.wav" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/templates/gobang.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/gobang.html" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -22,7 +15,7 @@
     <SUITE FILE_PATH="coverage/relax_online$r_client.coverage" NAME="r_client Coverage Results" MODIFIED="1559282197073" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/relax_online$test.coverage" NAME="test Coverage Results" MODIFIED="1559549764794" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/relax_online$t1.coverage" NAME="t1 Coverage Results" MODIFIED="1559793719376" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test" />
-    <SUITE FILE_PATH="coverage/relax_online$r_server.coverage" NAME="r_server Coverage Results" MODIFIED="1559808981816" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/relax_online$r_server.coverage" NAME="r_server Coverage Results" MODIFIED="1559810475825" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/relax_online$s.coverage" NAME="s Coverage Results" MODIFIED="1559552581501" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test" />
     <SUITE FILE_PATH="coverage/relax_online$fs_server.coverage" NAME="fs_server Coverage Results" MODIFIED="1559547413063" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/relax_online$gobang_server.coverage" NAME="gobang_server Coverage Results" MODIFIED="1559640567243" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/help" />
@@ -35,11 +28,11 @@
           <provider selected="true" editor-type-id="images" />
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/r_server.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="358">
-              <caret line="236" column="43" lean-forward="true" selection-start-line="236" selection-start-column="43" selection-end-line="236" selection-end-column="43" />
+            <state relative-caret-position="456">
+              <caret line="300" column="30" lean-forward="true" selection-start-line="300" selection-start-column="30" selection-end-line="300" selection-end-column="30" />
               <folding>
                 <element signature="e#109#123#0" expanded="true" />
               </folding>
@@ -57,11 +50,11 @@
           <provider selected="true" editor-type-id="images" />
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/templates/gobang.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="174">
-              <caret line="91" column="24" selection-start-line="91" selection-start-column="24" selection-end-line="91" selection-end-column="24" />
+            <state relative-caret-position="396">
+              <caret line="198" column="52" lean-forward="true" selection-start-line="198" selection-start-column="52" selection-end-line="198" selection-end-column="52" />
             </state>
           </provider>
         </entry>
@@ -130,8 +123,8 @@
         <option value="$PROJECT_DIR$/templates/fanpai.html" />
         <option value="$PROJECT_DIR$/test/t1.py" />
         <option value="$PROJECT_DIR$/templates/index.html" />
-        <option value="$PROJECT_DIR$/templates/gobang.html" />
         <option value="$PROJECT_DIR$/r_server.py" />
+        <option value="$PROJECT_DIR$/templates/gobang.html" />
       </list>
     </option>
   </component>
@@ -327,23 +320,23 @@
       <workItem from="1559272810410" duration="14747000" />
       <workItem from="1559529731487" duration="5468000" />
       <workItem from="1559542327275" duration="32145000" />
-      <workItem from="1559785008452" duration="17855000" />
+      <workItem from="1559785008452" duration="19220000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="70215000" />
+    <option name="totallyTimeSpent" value="71580000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="65" y="-4" width="1855" height="1084" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.2589928" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.2589928" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.16004184" />
+      <window_info anchor="bottom" id="Run" order="2" visible="true" weight="0.19874477" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -553,20 +546,20 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/templates/gobang.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="174">
-          <caret line="91" column="24" selection-start-line="91" selection-start-column="24" selection-end-line="91" selection-end-column="24" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/r_server.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="358">
-          <caret line="236" column="43" lean-forward="true" selection-start-line="236" selection-start-column="43" selection-end-line="236" selection-end-column="43" />
+        <state relative-caret-position="456">
+          <caret line="300" column="30" lean-forward="true" selection-start-line="300" selection-start-column="30" selection-end-line="300" selection-end-column="30" />
           <folding>
             <element signature="e#109#123#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/templates/gobang.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="396">
+          <caret line="198" column="52" lean-forward="true" selection-start-line="198" selection-start-column="52" selection-end-line="198" selection-end-column="52" />
         </state>
       </provider>
     </entry>

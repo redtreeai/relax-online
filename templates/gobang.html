@@ -85,19 +85,24 @@
             document.getElementById('chatlog').innerHTML = ih
         }
     }
-    
+
+    //投降
+    function touxiang() {
+
+    }
+
     //校验翻牌逻辑
     function check_click(data) {
         //传递点击位置
-        if (turn==cuser){
-            ws.send('check:'+cuser+':'+data.id)
+        if (turn == cuser) {
+            ws.send('check:' + cuser + ':' + data.id)
         }
     }
 
     function build_pan() {
         pan_html = '<table><tr>'
         for (var px = 0; px < 64; px++) {
-            cobj = '<td><img src="../static/majiang/'+pan[px]+'.jpg" id="'+px+'"  onclick="check_click(this)"></td>'
+            cobj = '<td><img src="../static/majiang/' + pan[px] + '.jpg" id="' + px + '"  onclick="check_click(this)"></td>'
             pan_html = pan_html + cobj
             if (px % 8 == 7) {
                 if (px == 63) {
@@ -109,7 +114,11 @@
         }
         pan_html = pan_html + '</table>'
         document.getElementById('pan').innerHTML = pan_html
-        document.getElementById('score').innerHTML = '轮到:玩家'+cuser+' //得分 玩家a:'+acount+' 玩家b:'+ bcount+' //'
+        document.getElementById('score').innerHTML = '轮到:玩家' + cuser + ' //得分 玩家a:' + acount + ' 玩家b:' + bcount + ' //'
+    }
+
+    function no_pan() {
+        document.getElementById('pan').innerHTML = '点击准备，开始下一局吧～'
     }
 
     function sendmsg() {
@@ -133,84 +142,137 @@
         ws.onmessage = function (msg) {
             var received_msg = strToJson(msg.data);
             //console.log('接收:' + msg.data)
-            if (received_msg.code=='nomessage') {
-                    console.log('do nothing')
-                }else {
-                 if (cuser == '0' && received_msg.code == 'connected') {
-                cuser = received_msg.cuser
-                //console.log('响应后:' + cuser)
+            if (received_msg.code == 'nomessage') {
+                console.log('do nothing')
             } else {
-                if (received_msg.code == 'm' && cuser == '0') {
-                    $.toast("房间已满，仅限观战");
+                if (cuser == '0' && received_msg.code == 'connected') {
                     cuser = received_msg.cuser
-                    //exitroom()
-                } else if (received_msg.code == 'chat') {
-                    chatlog_array = received_msg.chatlog
-                    change_log()
-                } else if (received_msg.code == 'ready') {
-                    if (received_msg.cuser == cuser) {
-                        isReady = true
-                        document.getElementById('ready').innerHTML = '取消'
+                    //console.log('响应后:' + cuser)
+                } else {
+                    if (received_msg.code == 'm' && cuser == '0') {
+                        $.toast("房间已满，仅限观战");
+                        cuser = received_msg.cuser
+                        //exitroom()
+                    } else if (received_msg.code == 'chat') {
+                        chatlog_array = received_msg.chatlog
+                        change_log()
+                    } else if (received_msg.code == 'ready') {
+                        if (received_msg.cuser == cuser) {
+                            isReady = true
+                            document.getElementById('ready').innerHTML = '取消'
 
-                    }
-                    chatlog_array = received_msg.chatlog
-                    change_log()
-                } else if (received_msg.code == 'notready') {
-                    if (received_msg.cuser == cuser) {
+                        }
+                        chatlog_array = received_msg.chatlog
+                        change_log()
+                    } else if (received_msg.code == 'notready') {
+                        if (received_msg.cuser == cuser) {
+                            isReady = false
+                            document.getElementById('ready').innerHTML = '准备'
+
+                        }
+                        chatlog_array = received_msg.chatlog
+                        change_log()
+                    } else if (received_msg.code == 'exit') {
                         isReady = false
+                        document.getElementById('ready').innerHTML = '准备'
+                        chatlog_array = received_msg.chatlog
+                        change_log()
+                    } else if (received_msg.code == 'startgame') {
+                        if (received_msg.turn == cuser) {
+                        }
+                        isGameing = true
+                        pan = received_msg.pan_show
+                        turn = received_msg.turn
+                        acount = received_msg.acount
+                        bcount = received_msg.bcount
+                        document.getElementById('ready').innerHTML = '投降'
+                        chatlog_array = received_msg.chatlog
+                        change_log()
+                        build_pan()
+                    } else if (received_msg.code == 'allexit') {
+                        ws.send(cuser + 'exit')
+                        ws.close()
+                        closePageForm()
+                    } else if (received_msg.code == 'check') {
+                        pan = received_msg.pan_show
+                        turn = received_msg.turn
+                        acount = received_msg.acount
+                        bcount = received_msg.bcount
+                        build_pan()
+                    } else if (received_msg.code == 'ping') {
+                        alert('平局！！ 玩家a:' + acount + '玩家b:' + bcount)
+                        isReady = false
+                        isGameing=received_msg.game_ing
+                        pan = received_msg.pan_show
+                        turn = received_msg.turn
+                        acount = received_msg.acount
+                        bcount = received_msg.bcount
+                        no_pan()
+                        document.getElementById('ready').innerHTML = '准备'
+
+                    } else if (received_msg.code == 'awin') {
+                        alert('玩家a获胜！！ 玩家a:' + acount + '玩家b:' + bcount)
+                        isReady = false
+                        isGameing=received_msg.game_ing
+                        pan = received_msg.pan_show
+                        turn = received_msg.turn
+                        acount = received_msg.acount
+                        bcount = received_msg.bcount
+                        no_pan()
+                        document.getElementById('ready').innerHTML = '准备'
+
+                    } else if (received_msg.code == 'bwin') {
+                        alert('玩家b获胜！！ 玩家a:' + acount + '玩家b:' + bcount)
+                        isReady = false
+                        isGameing=received_msg.game_ing
+                        pan = received_msg.pan_show
+                        turn = received_msg.turn
+                        acount = received_msg.acount
+                        bcount = received_msg.bcount
+                        no_pan()
+                        document.getElementById('ready').innerHTML = '准备'
+
+                    } else if (received_msg.code == 'atouxiang') {
+                        alert('玩家b获胜！！ 玩家a投降了')
+                        isReady = false
+                        isGameing=received_msg.game_ing
+                        pan = received_msg.pan_show
+                        turn = received_msg.turn
+                        acount = received_msg.acount
+                        bcount = received_msg.bcount
+                        no_pan()
+                        document.getElementById('ready').innerHTML = '准备'
+
+                    } else if (received_msg.code == 'btouxiang') {
+                        alert('玩家a获胜！! 玩家b投降了')
+                        isReady = false
+                        isGameing=received_msg.game_ing
+                        pan = received_msg.pan_show
+                        turn = received_msg.turn
+                        acount = received_msg.acount
+                        bcount = received_msg.bcount
+                        no_pan()
                         document.getElementById('ready').innerHTML = '准备'
 
                     }
-                    chatlog_array = received_msg.chatlog
-                    change_log()
-                } else if (received_msg.code == 'exit') {
-                    isReady = false
-                    document.getElementById('ready').innerHTML = '准备'
-                    chatlog_array = received_msg.chatlog
-                    change_log()
-                } else if (received_msg.code == 'startgame') {
-                    if (received_msg.turn==cuser){
-                        }
-                    isGameing = true
-                    pan = received_msg.pan_show
-                    turn = received_msg.turn
-                    acount = received_msg.acount
-                    bcount = received_msg.bcount
-                    document.getElementById('ready').innerHTML = '投降'
-                    chatlog_array = received_msg.chatlog
-                    change_log()
-                    build_pan()
-                } else if (received_msg.code == 'allexit') {
-                    ws.send(cuser+'exit')
-                    ws.close()
-                    closePageForm()
                 }
-                else if (received_msg.code == 'check') {
-                    pan = received_msg.pan_show
-                    turn = received_msg.turn
-                    acount = received_msg.acount
-                    bcount = received_msg.bcount
-                    build_pan()
+                chatlog_array = received_msg.chatlog
+                change_log()
+                ih = ''
+                if (received_msg.a == 1) {
+                    ih = ih + '<img src="../static/images/ahead.jpg">'
+                } else {
+                    ih = ih + '<img src="../static/images/agray.jpg">'
                 }
-            }
-            chatlog_array = received_msg.chatlog
-            change_log()
-            ih = ''
-            if (received_msg.a == 1) {
-                ih = ih + '<img src="../static/images/ahead.jpg">'
-            } else {
-                ih = ih + '<img src="../static/images/agray.jpg">'
-            }
 
-            if (received_msg.b == 1) {
-                ih = ih + '<img src="../static/images/bhead.jpg">'
-            } else {
-                ih = ih + '<img src="../static/images/bgray.jpg">'
-            }
+                if (received_msg.b == 1) {
+                    ih = ih + '<img src="../static/images/bhead.jpg">'
+                } else {
+                    ih = ih + '<img src="../static/images/bgray.jpg">'
+                }
 
-            document.getElementById('playerinfo').innerHTML = ih + '你是:玩家' + cuser
+                document.getElementById('playerinfo').innerHTML = ih + '你是:玩家' + cuser
             }
-
 
 
         };
@@ -236,6 +298,7 @@
     function getReady() {
         if (isGameing == true) {
             //游戏进行中可以选择投降
+            ws.send(cuser + 'touxiang')
         } else {
             if (isReady == false) {
                 //准备
