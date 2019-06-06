@@ -8,9 +8,12 @@
 import asyncio
 import json
 import websockets
-
+import random
+import time
 
 USERS = set()
+
+PAN_NAME = ['3b','3w','5b','6b','7t','8b','9t','dong','fa']
 
 #实例化服务端信息
 DATA = {
@@ -23,10 +26,31 @@ DATA = {
     'game_ing':0, #是否开局中
     'chatlog':[], #日志信息
     'loglong':5 , #日志长度
-    'list_black' : [] , # Black chess pieces positions
-    'list_white' : [] , # White chess pieces positions
-    'turn' : 1  # 1 : Turn to black side / 0 :   Turn to white side
+    'acount':0, #a消灭计数
+    'bcount':0, #b消灭计数
+    'turn':'a', #轮次
+    'pan':[] , #盘面实际数据
+    'pan_show':[],#盘面显示数据
+    'checkson':[] #当前校验组
+
 }
+
+#分配游戏数据
+async def start_game():
+    while len(DATA['pan'])<64:
+        cobj = random.choice(PAN_NAME)
+        DATA['pan'].append(cobj)
+        DATA['pan'].append(cobj)
+
+    while len(DATA['pan_show'])<64:
+        DATA['pan'].append('bg')
+
+    #每组两个 然后打乱
+    random.shuffle(DATA['pan'])
+    DATA['turn']='a'
+    DATA['acount']=0
+    DATA['bcount']=0
+
 
 #重置操作数据
 async def reset_cmsg():
@@ -131,6 +155,7 @@ async def linker(websocket, path):
                     DATA['code'] = 'startgame'
                     DATA['cuser'] = 'm'
 
+                    await start_game()
                     await notify_users()
 
                 else:
@@ -151,6 +176,7 @@ async def linker(websocket, path):
                     DATA['br'] = 1
                     DATA['game_ing'] = 1
                     DATA['chatlog'].append('双方准备完毕，游戏开始')
+
                     print('双方准备完毕，游戏开始')
                     if len(DATA['chatlog']) > DATA['loglong']:
                         DATA['chatlog'].pop(0)
@@ -158,6 +184,7 @@ async def linker(websocket, path):
                     DATA['code'] = 'startgame'
                     DATA['cuser'] = 'm'
 
+                    await start_game()
                     await notify_users()
 
                 else:
@@ -167,7 +194,7 @@ async def linker(websocket, path):
                     if len(DATA['chatlog']) > DATA['loglong']:
                         DATA['chatlog'].pop(0)
                     DATA['code'] = 'ready'
-                    DATA['cuser'] = 'a'
+                    DATA['cuser'] = 'b'
 
                     await notify_users()
 
@@ -213,8 +240,80 @@ async def linker(websocket, path):
 
                 await notify_users()
 
+            elif str(message) == 'mt':
+
+                DATA['code'] = 'allexit'
+                DATA['cuser'] = 'all'
+                DATA['a'] = 0
+                DATA['b'] = 0
+                DATA['ar'] = 0
+                DATA['br'] = 0
+                DATA['game_ing'] = 0
+                DATA['chatlog'] = []
+                DATA['loglong'] = 5
+                DATA['acount'] = 0
+                DATA['bcount'] = 0
+                DATA['turn'] = 'a'
+                DATA['pan'] = []
+
+                await notify_users()
+
+            elif str(message).startswith('check:'):
+
+                index = str(message).split(':')[2]
+                cuser = str(message).split(':')[1]
+                if len(DATA['checkson']) == 0:
+                    DATA['checkson'].append(int(index))
+                    DATA['code'] = 'check'
+                    DATA['cuser'] = cuser
+                    #显示盘反转指定牌
+                    DATA['pan_show'][int(index)] = DATA['pan'][int(index)]
+                elif len(DATA['checkson']) == 1:
+                    if int(index)==DATA['checkson'][0]:
+                        #如果点击相同的位置,没有反应
+                        print('操作无效')
+                    else:
+                        DATA['checkson'].append(int(index))
+                        DATA['code'] = 'check'
+                        DATA['cuser'] = cuser
+                        #显示盘反转指定牌
+                        DATA['pan_show'][int(index)] = DATA['pan'][int(index)]
+
+                await notify_users()
+
+                if len(DATA['checkson']) == 2:
+                    #如果校验的两个相等
+                    if DATA['pan'][DATA['checkson'][0]] == DATA['pan'][DATA['checkson'][1]]:
+                        DATA['code'] = 'check'
+                        DATA['cuser'] = cuser
+                        DATA[cuser+'count']=DATA[cuser+'count']+1
+                        #实盘数据清空
+                        DATA['pan'][DATA['checkson'][0]] = 'wt'
+                        DATA['pan'][DATA['checkson'][1]] = 'wt'
+                        #显示盘牌面清空
+                        DATA['pan_show'][DATA['checkson'][0]] = 'wt'
+                        DATA['pan_show'][DATA['checkson'][1]] = 'wt'
+
+                        time.sleep(1.5)
+                        await notify_users()
+
+                    else:
+                        #不等则翻回去
+                        DATA['code'] = 'check'
+                        DATA['cuser'] = cuser
+                        # 实盘数据不变
+                        # 显示盘牌面清空
+                        DATA['pan_show'][DATA['checkson'][0]] = 'bg'
+                        DATA['pan_show'][DATA['checkson'][1]] = 'bg'
+
+                        time.sleep(1.5)
+                        await notify_users()
+
             else:
-                await websocket.send(message)
+                ld = {
+                    'code':'nomessage'
+                }
+                await websocket.send(json.dumps(ld))
 
             print('服务端:'+str(DATA))
     except:
@@ -226,8 +325,8 @@ async def linker(websocket, path):
 
 
 print('正在配置websocket-server基础信息')
-#HOST = 'localhost'
-HOST = '0.0.0.0'
+HOST = 'localhost'
+#HOST = '0.0.0.0'
 wserver = websockets.serve(linker, HOST, 9999)
 print('正在启动wserver')
 asyncio.get_event_loop().run_until_complete(wserver

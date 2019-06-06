@@ -37,7 +37,7 @@
    <div class="content-block-title">五子棋PK</div>
   <div class="card demo-card-header-pic">
     <div valign="bottom" class="card-header color-white no-border no-padding">
-      <img class='card-cover' src="../static/wuziqi.jpg" alt="">
+      <img class='card-cover' src="../static/images/wuziqi.jpg" alt="">
     </div>
     <div class="card-content">
       <div class="card-content-inner">
@@ -46,13 +46,13 @@
       </div>
     </div>
     <div class="card-footer">
-      <a href="gobang.html" class="link">进入房间</a>
+      <a onclick="gobang()" class="link">进入房间</a>
     </div>
   </div>
       <div class="content-block-title">王者荣耀变态版</div>
   <div class="card demo-card-header-pic">
     <div valign="bottom" class="card-header color-white no-border no-padding">
-      <img class='card-cover' src="../static/wzry.jpeg" alt="">
+      <img class='card-cover' src="../static/images/wzry.jpeg" alt="">
     </div>
     <div class="card-content">
       <div class="card-content-inner">
@@ -70,6 +70,10 @@
     <script type='text/javascript' src='//g.alicdn.com/sj/lib/zepto/zepto.min.js' charset='utf-8'></script>
     <script type='text/javascript' src='//g.alicdn.com/msui/sm/0.6.2/js/sm.min.js' charset='utf-8'></script>
     <script type='text/javascript' src='//g.alicdn.com/msui/sm/0.6.2/js/sm-extend.min.js' charset='utf-8'></script>
-
+<script>
+  function gobang() {
+    window.open('gobang.html')
+  }
+</script>
   </body>
 </html>

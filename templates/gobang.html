@@ -16,14 +16,16 @@
 <body onload="startWS()">
 <div class="page">
     <header class="bar bar-nav">
-        <a class="icon icon-me pull-left icon-left" onclick="exitroom()"></a>
+        <a class="icon icon-me pull-left icon-left" onclick="closePageForm()"></a>
         <h1 class="title">001号房间</h1>
         <a class="icon icon-me pull-right icon-check " id="ready" onclick="getReady()"></a>
     </header>
     <div class="content">
-        <div>
+        <div id="score">
+            <!-- 隔开一定距离 -->
+        </div>
+        <div id="pan">
             <!-- 游戏区 -->
-            <canvas id="wuzi" width="400" height="500" onmousedown="listener(event)"></canvas>
         </div>
         <div class="content-block">
             <!-- 聊天区 -->
@@ -50,7 +52,7 @@
 
 
 </div>
-<script type='text/javascript' src='../static/config.js' charset='utf-8'></script>
+<script type='text/javascript' src='../static/js/config.js' charset='utf-8'></script>
 <script type='text/javascript' src='//g.alicdn.com/sj/lib/zepto/zepto.min.js' charset='utf-8'></script>
 <script type='text/javascript' src='//g.alicdn.com/msui/sm/0.6.2/js/sm.min.js' charset='utf-8'></script>
 <script type='text/javascript' src='//g.alicdn.com/msui/sm/0.6.2/js/sm-extend.min.js' charset='utf-8'></script>
@@ -60,61 +62,10 @@
     var chatlog_array = new Array();
     var isReady = false;
     var isGameing = false;
-    var c = document.getElementById("wuzi");
-
-    var cxt = c.getContext("2d");
-    cxt.fillStyle = "black";
-
-    //绘制棋盘
-    for (var x = 20; x < 490; x = x + 40) {
-        cxt.moveTo(20, x)
-        cxt.lineTo(380, x)
-        cxt.stroke();
-    }
-
-    for (var y = 20; y < 390; y = y + 40) {
-        cxt.moveTo(y, 20)
-        cxt.lineTo(y, 460)
-        cxt.stroke();
-    }
-
-    function listener(n) {
-        //鼠标坐标监听事件
-        var pointX = n.clientX;
-        var pointY = n.clientY;
-
-        console.log(pointX,pointY)
-        addX = delX = pointX
-        addY = delY = pointY
-
-        while ((addX%40)!=0 && (addX%40)!=0){
-            addX = addX + 1
-            delX = delX - 1
-        }
-
-        while ((addY%40)!=0 && (addY%40)!=0){
-            addY = addY + 1
-            delY = delY - 1
-        }
-
-        if((addX%40) ==0){
-         cx = addX
-        }else{
-            cx=delX
-        }
-
-         if((addY%40) ==0){
-         cy = addY
-        }else{
-             cy = delY
-        }
-
-        cxt.beginPath();
-        cxt.arc(cx-40, cy-80, 20, 0, Math.PI * 2, true);
-        cxt.closePath();
-        cxt.fill();
-
-    }
+    var turn = '0';
+    var pan = [];
+    var acount = 0;
+    var bcount = 0;
 
     //初始化websockt对象
 
@@ -134,12 +85,41 @@
             document.getElementById('chatlog').innerHTML = ih
         }
     }
+    
+    //校验翻牌逻辑
+    function check_click(data) {
+        //传递点击位置
+        if (turn==cuser){
+            ws.send('check:'+cuser+':'+data.id)
+        }
+    }
 
+    function build_pan() {
+        pan_html = '<table><tr>'
+        for (var px = 0; px < 64; px++) {
+            cobj = '<td><img src="../static/majiang/bg.jpg" id="'+px+'"  onclick="check_click(this)"></td>'
+            pan_html = pan_html + cobj
+            if (px % 8 == 7) {
+                if (px == 63) {
+                    pan_html = pan_html + '</tr>'
+                } else {
+                    pan_html = pan_html + '</tr><tr>'
+                }
+            }
+        }
+        pan_html = pan_html + '</table>'
+        document.getElementById('pan').innerHTML = pan_html
+        document.getElementById('score').innerHTML = '轮到:玩家'+cuser+' //得分 玩家a:'+acount+' 玩家b:'+ bcount+' //'
+    }
 
     function sendmsg() {
         var inputmsg = document.getElementById("inputmsg").value;
         document.getElementById("inputmsg").value = " "
-        ws.send(cuser + ':' + inputmsg)
+        if (cuser == 'm' && inputmsg == 'mt') {
+            ws.send('mt')
+        } else {
+            ws.send(cuser + ':' + inputmsg)
+        }
     }
 
     function startWS() {
@@ -153,14 +133,17 @@
         ws.onmessage = function (msg) {
             var received_msg = strToJson(msg.data);
             //console.log('接收:' + msg.data)
-
-            if (cuser == '0' && received_msg.code == 'connected') {
+            if (received_msg.code=='nomessage') {
+                    console.log('do nothing')
+                }else {
+                 if (cuser == '0' && received_msg.code == 'connected') {
                 cuser = received_msg.cuser
                 //console.log('响应后:' + cuser)
             } else {
                 if (received_msg.code == 'm' && cuser == '0') {
-                    alert("房间已满");
-                    exitroom()
+                    $.toast("房间已满，仅限观战");
+                    cuser = received_msg.cuser
+                    //exitroom()
                 } else if (received_msg.code == 'chat') {
                     chatlog_array = received_msg.chatlog
                     change_log()
@@ -186,28 +169,48 @@
                     chatlog_array = received_msg.chatlog
                     change_log()
                 } else if (received_msg.code == 'startgame') {
+                    if (received_msg.turn==cuser){
+                        $.toast("该你了");
+                    }
                     isGameing = true
+                    pan = received_msg.pan
+                    turn = received_msg.turn
+                    acount = received_msg.acount
+                    bcount = received_msg.bcount
                     document.getElementById('ready').innerHTML = '投降'
                     chatlog_array = received_msg.chatlog
                     change_log()
+                    build_pan()
+                } else if (received_msg.code == 'allexit') {
+                    ws.send(cuser+'exit')
+                    ws.close()
+                    closePageForm()
+                }
+                else if (received_msg.code == 'allexit') {
+                    ws.send(cuser+'exit')
+                    ws.close()
+                    closePageForm()
                 }
             }
             chatlog_array = received_msg.chatlog
             change_log()
             ih = ''
             if (received_msg.a == 1) {
-                ih = ih + '<img src="../static/ahead.jpg">'
+                ih = ih + '<img src="../static/images/ahead.jpg">'
             } else {
-                ih = ih + '<img src="../static/agray.jpg">'
+                ih = ih + '<img src="../static/images/agray.jpg">'
             }
 
             if (received_msg.b == 1) {
-                ih = ih + '<img src="../static/bhead.jpg">'
+                ih = ih + '<img src="../static/images/bhead.jpg">'
             } else {
-                ih = ih + '<img src="../static/bgray.jpg">'
+                ih = ih + '<img src="../static/images/bgray.jpg">'
             }
 
             document.getElementById('playerinfo').innerHTML = ih + '你是:玩家' + cuser
+            }
+
+
 
         };
         ws.onerror = function (error) {
@@ -240,6 +243,12 @@
                 ws.send(cuser + 'notready')
             }
         }
+    }
+
+    function closePageForm() {
+        window.opener = null;
+        window.open('', '_self');
+        window.close();
     }
 
     function exitroom() {
